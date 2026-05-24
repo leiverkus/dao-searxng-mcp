@@ -1,5 +1,9 @@
 # DAO SearXNG MCP
 
+[![Tests](https://github.com/leiverkus/dao-searxng-mcp/actions/workflows/tests.yml/badge.svg)](https://github.com/leiverkus/dao-searxng-mcp/actions/workflows/tests.yml)
+[![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 An [MCP](https://modelcontextprotocol.io/) server that connects AI coding and research agents to a local [SearXNG](https://docs.searxng.org/) instance — with **structured, source-labelled citations** and a per-result **detection layer** (DOI, source class, OA heuristic, content-type) baked into every response.
 
 Sibling project of [dao-paper-search-mcp](https://github.com/leiverkus/dao-paper-search-mcp): SearXNG-side covers general/news/science web search with detection signals, paper-search-side covers Crossref/Unpaywall/Semantic Scholar verification of DOIs surfaced here.
@@ -21,12 +25,12 @@ Most search MCP servers return raw results and leave citation formatting to the 
 
 ## Tools
 
-| Tool | Description |
-|------|-------------|
-| `web_search` | General web search with category, language, time filter, and optional `engines` override |
-| `news_search` | News search (defaults to past week), with optional `engines` |
+| Tool             | Description                                                                                   |
+| ---------------- | --------------------------------------------------------------------------------------------- |
+| `web_search`     | General web search with category, language, time filter, and optional `engines` override      |
+| `news_search`    | News search (defaults to past week), with optional `engines`                                  |
 | `science_search` | Academic sources (arXiv, Semantic Scholar, PubMed, Google Scholar, …) with optional `engines` |
-| `fetch_url` | Fetch a URL and return it as readable plain text |
+| `fetch_url`      | Fetch a URL and return it as readable plain text                                              |
 
 > **Renamed in 1.3.0.** The old names `cited_search`, `cited_news_search`, and
 > `cited_science_search` remain registered as deprecated aliases pointing at
@@ -79,14 +83,14 @@ Claims the fortresses prove the biblical Exodus…
 
 Every search result is annotated with structured signals that the LLM can route on — without the server itself making any external API calls beyond SearXNG and the result URLs:
 
-| Field | Values | Set by |
-|---|---|---|
-| `source_class` | `primary_publisher`, `academic_repository`, `preprint_server`, `aggregator`, `suspect`, `grey_lit_or_unknown` | Glob match of result hostname against [`domain-classes.yml`](domain-classes.yml) |
-| `doi_detected` | `"10.xxx/yyy"` or absent | Regex over title + snippet + extracted full text (no Crossref call) |
-| `doi_candidates` | array of strings (only if >1 DOI found) | same |
-| `oa_url_heuristic` | `"likely"`, `"maybe"`, `"no"` | URL shape — `.pdf` / `/pdf/` / repo host etc. (no Unpaywall call) |
-| `content_type` | e.g. `"application/pdf"`, `"text/html"` | HTTP response header |
-| `content_extraction` | `"ok"`, `"failed_pdf"`, `"fetch_failed"` | Result of Readability / pdf-parse |
+| Field                | Values                                                                                                        | Set by                                                                           |
+| -------------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `source_class`       | `primary_publisher`, `academic_repository`, `preprint_server`, `aggregator`, `suspect`, `grey_lit_or_unknown` | Glob match of result hostname against [`domain-classes.yml`](domain-classes.yml) |
+| `doi_detected`       | `"10.xxx/yyy"` or absent                                                                                      | Regex over title + snippet + extracted full text (no Crossref call)              |
+| `doi_candidates`     | array of strings (only if >1 DOI found)                                                                       | same                                                                             |
+| `oa_url_heuristic`   | `"likely"`, `"maybe"`, `"no"`                                                                                 | URL shape — `.pdf` / `/pdf/` / repo host etc. (no Unpaywall call)                |
+| `content_type`       | e.g. `"application/pdf"`, `"text/html"`                                                                       | HTTP response header                                                             |
+| `content_extraction` | `"ok"`, `"failed_pdf"`, `"fetch_failed"`                                                                      | Result of Readability / pdf-parse                                                |
 
 Results are reordered by class (primary > repository > unknown > aggregator > suspect) so the fetch budget hits the best sources first. Disable with `prioritize_primary: false`.
 
@@ -95,6 +99,7 @@ Duplicates are then collapsed (same DOI across hosts, or same canonical URL acro
 When `doi_detected` is set on a result, the consuming LLM should call `paper-search-mcp` (or equivalent) with that DOI to verify metadata against Crossref, rather than trusting snippet text. This division of labor keeps this server independent of `paper-search-mcp`, so the two tools cross-validate each other.
 
 The domain lists in `domain-classes.yml` are right-anchor globs:
+
 - `*.cambridge.org` matches `journals.cambridge.org`, `www.cambridge.org`, and `cambridge.org` itself
 - `*.cambridge.org` does NOT match `cambridge.org.evil-aggregator.com`
 - `*.ub.uni-*.de` matches `www.ub.uni-oldenburg.de`
@@ -249,19 +254,19 @@ Add to your Claude Code MCP settings:
 
 ## Environment variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `SEARXNG_URL` | `http://localhost:8080` | Base URL of your SearXNG instance. Comma-separated list to enable failover (first reachable wins). |
-| `SEARXNG_API_KEY` | _(empty)_ | Password for HTTP Basic auth (username is always `searxng`) |
-| `SEARXNG_DEFAULT_LANG` | `en` | Default language for search queries (`en`, `de`, `fr`, etc.) |
-| `MCP_TRANSPORT` | `stdio` | `stdio` or `http`. Use `http` for remote access via Streamable HTTP transport. |
-| `MCP_HOST` | `127.0.0.1` | Bind host when `MCP_TRANSPORT=http` |
-| `MCP_PORT` | `3333` | Bind port when `MCP_TRANSPORT=http` |
-| `SEARXNG_TIMEOUT_MS` | `15000` | Timeout for the SearXNG query itself, in milliseconds. |
-| `FETCH_URL_TIMEOUT_MS` | `8000` | Per-URL fetch timeout during bulk content enrichment. The standalone `fetch_url` tool keeps its own 15s timeout since you've explicitly chosen that URL. |
-| `TOOL_BUDGET_MS` | `25000` | Hard wall-clock budget for a single search tool call. On overrun, in-flight URL fetches are aborted and surface as `fetchError: "budget exceeded"`; whichever fetches already completed are returned. Set a few seconds below your MCP client's request timeout. |
-| `MAX_OUTPUT_CHARS` | `20000` | Hard cap on the tool response length. Tail result blocks are dropped first; the `### Sources` list and citation instruction are always preserved. |
-| `EXPOSE_LEGACY_TOOL_NAMES` | `true` | When `false`, suppresses the deprecated `cited_search`, `cited_news_search`, `cited_science_search` aliases. |
+| Variable                   | Default                 | Description                                                                                                                                                                                                                                                      |
+| -------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SEARXNG_URL`              | `http://localhost:8080` | Base URL of your SearXNG instance. Comma-separated list to enable failover (first reachable wins).                                                                                                                                                               |
+| `SEARXNG_API_KEY`          | _(empty)_               | Password for HTTP Basic auth (username is always `searxng`)                                                                                                                                                                                                      |
+| `SEARXNG_DEFAULT_LANG`     | `en`                    | Default language for search queries (`en`, `de`, `fr`, etc.)                                                                                                                                                                                                     |
+| `MCP_TRANSPORT`            | `stdio`                 | `stdio` or `http`. Use `http` for remote access via Streamable HTTP transport.                                                                                                                                                                                   |
+| `MCP_HOST`                 | `127.0.0.1`             | Bind host when `MCP_TRANSPORT=http`                                                                                                                                                                                                                              |
+| `MCP_PORT`                 | `3333`                  | Bind port when `MCP_TRANSPORT=http`                                                                                                                                                                                                                              |
+| `SEARXNG_TIMEOUT_MS`       | `15000`                 | Timeout for the SearXNG query itself, in milliseconds.                                                                                                                                                                                                           |
+| `FETCH_URL_TIMEOUT_MS`     | `8000`                  | Per-URL fetch timeout during bulk content enrichment. The standalone `fetch_url` tool keeps its own 15s timeout since you've explicitly chosen that URL.                                                                                                         |
+| `TOOL_BUDGET_MS`           | `25000`                 | Hard wall-clock budget for a single search tool call. On overrun, in-flight URL fetches are aborted and surface as `fetchError: "budget exceeded"`; whichever fetches already completed are returned. Set a few seconds below your MCP client's request timeout. |
+| `MAX_OUTPUT_CHARS`         | `20000`                 | Hard cap on the tool response length. Tail result blocks are dropped first; the `### Sources` list and citation instruction are always preserved.                                                                                                                |
+| `EXPOSE_LEGACY_TOOL_NAMES` | `true`                  | When `false`, suppresses the deprecated `cited_search`, `cited_news_search`, `cited_science_search` aliases.                                                                                                                                                     |
 
 ## System prompt recommendation
 

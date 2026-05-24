@@ -17,7 +17,14 @@ node index.js
 
 # Run tests
 npm test
+
+# Check formatting / auto-fix
+npm run lint
+npm run format
 ```
+
+Before pushing, please run `npm run lint && npm test` — CI runs the same checks
+on Node 18, 20, and 22.
 
 ## Pull requests
 
@@ -40,3 +47,4 @@ When reporting a bug, please include:
 - ES modules (`import`/`export`)
 - No build step — the source is the distribution
 - Keep dependencies minimal
+- Formatting is enforced by Prettier (see `.prettierrc.json`)
