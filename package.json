@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "node index.js",
-    "test": "node --test 'test/*.test.js'",
+    "test": "node --test test/*.test.js",
     "test:coverage": "node scripts/check-coverage.mjs",
     "lint": "prettier --check .",
     "format": "prettier --write ."
