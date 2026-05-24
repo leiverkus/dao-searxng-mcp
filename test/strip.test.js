@@ -31,13 +31,7 @@ test("stripHtmlToText — strips chrome (nav, footer, header, aside, form)", () 
     <form>SEARCH_BOX</form>
     <footer>FOOTER_LEGAL</footer>`;
   const out = stripHtmlToText(html);
-  for (const noise of [
-    "NAVIGATION_TOP",
-    "NAV_LINKS",
-    "SIDEBAR_AD",
-    "SEARCH_BOX",
-    "FOOTER_LEGAL",
-  ]) {
+  for (const noise of ["NAVIGATION_TOP", "NAV_LINKS", "SIDEBAR_AD", "SEARCH_BOX", "FOOTER_LEGAL"]) {
     assert.ok(!out.includes(noise), `should strip ${noise}`);
   }
   assert.ok(out.includes("real content here"));

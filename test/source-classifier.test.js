@@ -29,17 +29,11 @@ test("detectDOI — catches a canonical DOI in plain text", () => {
 });
 
 test("detectDOI — catches DOI with long suffix and digits", () => {
-  assert.equal(
-    detectDOI("doi 10.1080/00758914.2024.123456"),
-    "10.1080/00758914.2024.123456"
-  );
+  assert.equal(detectDOI("doi 10.1080/00758914.2024.123456"), "10.1080/00758914.2024.123456");
 });
 
 test("detectDOI — trims trailing punctuation", () => {
-  assert.equal(
-    detectDOI("see 10.1179/abc.2009.0024."),
-    "10.1179/abc.2009.0024"
-  );
+  assert.equal(detectDOI("see 10.1179/abc.2009.0024."), "10.1179/abc.2009.0024");
   assert.equal(detectDOI("(10.1179/abc.2009.0024)"), "10.1179/abc.2009.0024");
 });
 
@@ -68,10 +62,7 @@ test("detectDOICandidates — dedup + ordered list when multiple present", () =>
     "First reference 10.1179/abc.2009.0024 then a second 10.1080/00758914.2024.x123 " +
     "and a repeat of 10.1179/abc.2009.0024.";
   const dois = detectDOICandidates(text);
-  assert.deepEqual(dois, [
-    "10.1179/abc.2009.0024",
-    "10.1080/00758914.2024.x123",
-  ]);
+  assert.deepEqual(dois, ["10.1179/abc.2009.0024", "10.1080/00758914.2024.x123"]);
 });
 
 test("detectDOI — null/empty input is safe", () => {
@@ -92,18 +83,9 @@ const classes = {
 };
 
 test("classifyDomain — wildcard subdomain matches both bare and prefixed hosts", () => {
-  assert.equal(
-    classifyDomain("https://www.cambridge.org/foo", classes),
-    "primary_publisher"
-  );
-  assert.equal(
-    classifyDomain("https://journals.cambridge.org/x", classes),
-    "primary_publisher"
-  );
-  assert.equal(
-    classifyDomain("https://cambridge.org/y", classes),
-    "primary_publisher"
-  );
+  assert.equal(classifyDomain("https://www.cambridge.org/foo", classes), "primary_publisher");
+  assert.equal(classifyDomain("https://journals.cambridge.org/x", classes), "primary_publisher");
+  assert.equal(classifyDomain("https://cambridge.org/y", classes), "primary_publisher");
 });
 
 test("classifyDomain — right-anchor: spoofed domain in path does NOT match", () => {
@@ -121,14 +103,8 @@ test("classifyDomain — multi-wildcard middle pattern", () => {
 });
 
 test("classifyDomain — exact-match host without wildcard", () => {
-  assert.equal(
-    classifyDomain("https://academia.edu/papers/123", classes),
-    "aggregator"
-  );
-  assert.equal(
-    classifyDomain("https://www.academia.edu/papers/123", classes),
-    "aggregator"
-  );
+  assert.equal(classifyDomain("https://academia.edu/papers/123", classes), "aggregator");
+  assert.equal(classifyDomain("https://www.academia.edu/papers/123", classes), "aggregator");
 });
 
 test("classifyDomain — bare hostname pattern also matches its www. form", () => {
@@ -136,18 +112,9 @@ test("classifyDomain — bare hostname pattern also matches its www. form", () =
   // otherwise the YAML editor would have to remember to add both. Right-
   // anchor is still preserved: "mirror.biblewalks.com" does NOT match.
   const minimal = { ...classes, suspect: ["biblewalks.com"] };
-  assert.equal(
-    classifyDomain("https://www.biblewalks.com/foo", minimal),
-    "suspect"
-  );
-  assert.equal(
-    classifyDomain("https://biblewalks.com/foo", minimal),
-    "suspect"
-  );
-  assert.equal(
-    classifyDomain("https://mirror.biblewalks.com/foo", minimal),
-    "grey_lit_or_unknown"
-  );
+  assert.equal(classifyDomain("https://www.biblewalks.com/foo", minimal), "suspect");
+  assert.equal(classifyDomain("https://biblewalks.com/foo", minimal), "suspect");
+  assert.equal(classifyDomain("https://mirror.biblewalks.com/foo", minimal), "grey_lit_or_unknown");
 });
 
 test("classifyDomain — preprint server", () => {
@@ -164,10 +131,7 @@ test("classifyDomain — suspect wins over other matches", () => {
 });
 
 test("classifyDomain — unknown domain → grey_lit_or_unknown", () => {
-  assert.equal(
-    classifyDomain("https://random-blog.example/post", classes),
-    "grey_lit_or_unknown"
-  );
+  assert.equal(classifyDomain("https://random-blog.example/post", classes), "grey_lit_or_unknown");
 });
 
 test("classifyDomain — malformed URL → grey_lit_or_unknown", () => {
@@ -180,14 +144,8 @@ test("classifyDomain — malformed URL → grey_lit_or_unknown", () => {
 
 test("oaUrlHeuristic — .pdf and /pdf/ paths are likely", () => {
   assert.equal(oaUrlHeuristic("https://example.org/article.pdf"), "likely");
-  assert.equal(
-    oaUrlHeuristic("https://example.org/article.pdf?download=1"),
-    "likely"
-  );
-  assert.equal(
-    oaUrlHeuristic("https://example.org/pdf/123", "primary_publisher"),
-    "likely"
-  );
+  assert.equal(oaUrlHeuristic("https://example.org/article.pdf?download=1"), "likely");
+  assert.equal(oaUrlHeuristic("https://example.org/pdf/123", "primary_publisher"), "likely");
   assert.equal(
     oaUrlHeuristic("https://example.org/open-access/article", "primary_publisher"),
     "likely"
@@ -203,28 +161,16 @@ test("oaUrlHeuristic — .pdf and /pdf/ paths are likely", () => {
 });
 
 test("oaUrlHeuristic — repository hosts default to maybe", () => {
-  assert.equal(
-    oaUrlHeuristic("https://zenodo.org/record/123", "academic_repository"),
-    "maybe"
-  );
-  assert.equal(
-    oaUrlHeuristic("https://arxiv.org/abs/2401.0", "preprint_server"),
-    "maybe"
-  );
+  assert.equal(oaUrlHeuristic("https://zenodo.org/record/123", "academic_repository"), "maybe");
+  assert.equal(oaUrlHeuristic("https://arxiv.org/abs/2401.0", "preprint_server"), "maybe");
 });
 
 test("oaUrlHeuristic — publishers without OA path → no", () => {
-  assert.equal(
-    oaUrlHeuristic("https://journals.cambridge.org/x", "primary_publisher"),
-    "no"
-  );
+  assert.equal(oaUrlHeuristic("https://journals.cambridge.org/x", "primary_publisher"), "no");
 });
 
 test("oaUrlHeuristic — aggregators / suspect / unknown → no", () => {
-  assert.equal(
-    oaUrlHeuristic("https://academia.edu/papers/x", "aggregator"),
-    "no"
-  );
+  assert.equal(oaUrlHeuristic("https://academia.edu/papers/x", "aggregator"), "no");
   assert.equal(oaUrlHeuristic("https://bible.ca/x", "suspect"), "no");
   assert.equal(oaUrlHeuristic("https://example.com/x", "grey_lit_or_unknown"), "no");
 });
@@ -245,10 +191,7 @@ test("loadDomainClasses — invalid schema throws with informative message", () 
   const tmp = path.join(os.tmpdir(), `bad-classes-${Date.now()}.yml`);
   fs.writeFileSync(tmp, "classes:\n  primary_publisher: not-a-list\n");
   try {
-    assert.throws(
-      () => loadDomainClasses(tmp),
-      /Invalid domain-classes file/
-    );
+    assert.throws(() => loadDomainClasses(tmp), /Invalid domain-classes file/);
   } finally {
     fs.unlinkSync(tmp);
   }
@@ -271,31 +214,19 @@ test("loadDomainClasses — missing keys default to empty arrays", () => {
 // ----- inferDOIFromUrl --------------------------------------------------
 
 test("inferDOIFromUrl — JSTOR article stable ID → 10.2307/N", () => {
-  assert.equal(
-    inferDOIFromUrl("https://www.jstor.org/stable/1356668"),
-    "10.2307/1356668"
-  );
+  assert.equal(inferDOIFromUrl("https://www.jstor.org/stable/1356668"), "10.2307/1356668");
   // /stable/pdf/N.pdf form (the PDF download URL on JSTOR)
-  assert.equal(
-    inferDOIFromUrl("https://www.jstor.org/stable/pdf/1356668.pdf"),
-    "10.2307/1356668"
-  );
+  assert.equal(inferDOIFromUrl("https://www.jstor.org/stable/pdf/1356668.pdf"), "10.2307/1356668");
 });
 
 test("inferDOIFromUrl — JSTOR issue/journal stable IDs are skipped", () => {
   // /stable/i23396752 is an issue identifier, not an article — must not be
   // converted to a fake article DOI.
-  assert.equal(
-    inferDOIFromUrl("https://www.jstor.org/stable/i23396752"),
-    null
-  );
+  assert.equal(inferDOIFromUrl("https://www.jstor.org/stable/i23396752"), null);
 });
 
 test("inferDOIFromUrl — non-JSTOR hosts return null", () => {
-  assert.equal(
-    inferDOIFromUrl("https://www.cambridge.org/core/journals/x/article/y"),
-    null
-  );
+  assert.equal(inferDOIFromUrl("https://www.cambridge.org/core/journals/x/article/y"), null);
   assert.equal(inferDOIFromUrl("not a url"), null);
   assert.equal(inferDOIFromUrl(null), null);
   assert.equal(inferDOIFromUrl(""), null);
@@ -352,10 +283,7 @@ test("enrichResultWithClassification — multiple DOIs → doi_candidates set", 
     classes
   );
   assert.equal(enriched.doi_detected, "10.1179/abc.2009.0024");
-  assert.deepEqual(enriched.doi_candidates, [
-    "10.1179/abc.2009.0024",
-    "10.1080/00758914.2024.x99",
-  ]);
+  assert.deepEqual(enriched.doi_candidates, ["10.1179/abc.2009.0024", "10.1080/00758914.2024.x99"]);
 });
 
 // ----- rankResults -----------------------------------------------------

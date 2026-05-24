@@ -45,9 +45,7 @@ const elapsed = Date.now() - t0;
 console.log(`SearXNG returned ${data.results?.length ?? 0} results in ${elapsed}ms\n`);
 
 const classes = loadDomainClasses(DOMAIN_CLASSES_PATH);
-const classified = (data.results || []).map((r) =>
-  enrichResultWithClassification(r, classes)
-);
+const classified = (data.results || []).map((r) => enrichResultWithClassification(r, classes));
 const ranked = rankResults(classified);
 const deduped = deduplicateResults(ranked);
 console.log(`After dedup: ${deduped.length} results (was ${ranked.length})\n`);
@@ -57,10 +55,12 @@ const classCount = {};
 for (const r of top) classCount[r.source_class] = (classCount[r.source_class] || 0) + 1;
 console.log(`Top-10 class distribution: ${JSON.stringify(classCount)}\n`);
 
-const dois = top.filter((r) => r.doi_detected).map((r) => ({
-  doi: r.doi_detected,
-  host: new URL(r.url).hostname,
-}));
+const dois = top
+  .filter((r) => r.doi_detected)
+  .map((r) => ({
+    doi: r.doi_detected,
+    host: new URL(r.url).hostname,
+  }));
 console.log(`DOIs detected in top-10: ${dois.length}`);
 for (const d of dois) console.log(`  - ${d.doi}  (on ${d.host})`);
 console.log("");

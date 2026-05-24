@@ -1,10 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import {
-  formatCitedResults,
-  buildCitationLabels,
-  sanitizeSlug,
-} from "../index.js";
+import { formatCitedResults, buildCitationLabels, sanitizeSlug } from "../index.js";
 
 test("formatCitedResults — empty results", () => {
   const out = formatCitedResults([], "anything");
@@ -26,10 +22,7 @@ test("formatCitedResults — basic structure: header, labeled hits, sources bloc
   assert.match(out, /\*\*\(example\.org — Second\) Second\*\*/);
   assert.match(out, /https:\/\/example\.org\/a/);
   assert.match(out, /### Sources/);
-  assert.match(
-    out,
-    /- \(example\.org — First\) \[First\]\(https:\/\/example\.org\/a\)/
-  );
+  assert.match(out, /- \(example\.org — First\) \[First\]\(https:\/\/example\.org\/a\)/);
   // Citation instruction must guide the model to produce inline [(label)](url) links
   assert.match(out, /\[\(label\)\]\(url\)/);
 });
@@ -55,10 +48,7 @@ test("formatCitedResults — handles missing fields without throwing", () => {
 });
 
 test("formatCitedResults — preserves special characters in titles", () => {
-  const out = formatCitedResults(
-    [{ title: "Foo & Bar [draft]", url: "https://example.org" }],
-    "q"
-  );
+  const out = formatCitedResults([{ title: "Foo & Bar [draft]", url: "https://example.org" }], "q");
   assert.ok(
     out.includes("Foo & Bar [draft]"),
     "title with brackets and ampersand must round-trip into the displayed text"
@@ -136,9 +126,7 @@ test("formatCitedResults — shows engines and bestScore tags when present", () 
 // -- buildCitationLabels --------------------------------------------------
 
 test("buildCitationLabels — strips leading www.", () => {
-  const labels = buildCitationLabels([
-    { title: "T", url: "https://www.foo.com/x" },
-  ]);
+  const labels = buildCitationLabels([{ title: "T", url: "https://www.foo.com/x" }]);
   assert.deepEqual(labels, ["foo.com"]);
 });
 
@@ -155,10 +143,7 @@ test("buildCitationLabels — disambiguates same hostname with title slug", () =
     { title: "Article One", url: "https://example.com/1" },
     { title: "Article Two", url: "https://example.com/2" },
   ]);
-  assert.deepEqual(labels, [
-    "example.com — Article One",
-    "example.com — Article Two",
-  ]);
+  assert.deepEqual(labels, ["example.com — Article One", "example.com — Article Two"]);
 });
 
 test("buildCitationLabels — collision suffix when titles are identical", () => {
@@ -166,10 +151,7 @@ test("buildCitationLabels — collision suffix when titles are identical", () =>
     { title: "Same", url: "https://example.com/a" },
     { title: "Same", url: "https://example.com/b" },
   ]);
-  assert.deepEqual(labels, [
-    "example.com — Same",
-    "example.com — Same #2",
-  ]);
+  assert.deepEqual(labels, ["example.com — Same", "example.com — Same #2"]);
 });
 
 test("buildCitationLabels — falls back to path segment when title is empty", () => {
@@ -179,10 +161,7 @@ test("buildCitationLabels — falls back to path segment when title is empty", (
   ]);
   // Two results for example.com so disambiguation is required; the first has
   // no title so it falls back to the first path segment ("docs").
-  assert.deepEqual(labels, [
-    "example.com — docs",
-    "example.com — Other",
-  ]);
+  assert.deepEqual(labels, ["example.com — docs", "example.com — Other"]);
 });
 
 test("buildCitationLabels — handles malformed/missing URLs", () => {
@@ -191,10 +170,7 @@ test("buildCitationLabels — handles malformed/missing URLs", () => {
     { title: "Also lost", url: undefined },
   ]);
   // Both fall into the "unknown" bucket → disambiguated by slug.
-  assert.deepEqual(labels, [
-    "unknown — Lost",
-    "unknown — Also lost",
-  ]);
+  assert.deepEqual(labels, ["unknown — Lost", "unknown — Also lost"]);
 });
 
 // -- sanitizeSlug ----------------------------------------------------------

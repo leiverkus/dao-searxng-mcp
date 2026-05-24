@@ -31,17 +31,14 @@ test("fetchUrlContent (via enrich) — garbage application/pdf body → content_
     contentType: "application/pdf",
   });
   try {
-    const out = await enrichResultsWithContent(
-      [{ title: "Doc", url: `${srv.baseUrl}/whatever` }],
-      {
-        topN: 1,
-        maxLength: 5000,
-        query: "test",
-        highlights: false,
-        budgetMs: 8000,
-        fetchTimeoutMs: 5000,
-      }
-    );
+    const out = await enrichResultsWithContent([{ title: "Doc", url: `${srv.baseUrl}/whatever` }], {
+      topN: 1,
+      maxLength: 5000,
+      query: "test",
+      highlights: false,
+      budgetMs: 8000,
+      fetchTimeoutMs: 5000,
+    });
     assert.equal(out[0].content_extraction, "failed_pdf");
     assert.equal(out[0].content_type, "application/pdf");
     assert.ok(!out[0].fullContent, "no fullContent when extraction failed");
@@ -53,26 +50,21 @@ test("fetchUrlContent (via enrich) — garbage application/pdf body → content_
 test("fetchUrlContent (via enrich) — html response → content_extraction=ok and content_type set", async () => {
   const html =
     "<html><body><article>" +
-    "Standard html body with enough words to clear the Readability 200-char minimum. ".repeat(
-      6
-    ) +
+    "Standard html body with enough words to clear the Readability 200-char minimum. ".repeat(6) +
     "</article></body></html>";
   const srv = await startTestServer({
     body: html,
     contentType: "text/html; charset=utf-8",
   });
   try {
-    const out = await enrichResultsWithContent(
-      [{ title: "Doc", url: `${srv.baseUrl}/page` }],
-      {
-        topN: 1,
-        maxLength: 5000,
-        query: "test",
-        highlights: false,
-        budgetMs: 8000,
-        fetchTimeoutMs: 5000,
-      }
-    );
+    const out = await enrichResultsWithContent([{ title: "Doc", url: `${srv.baseUrl}/page` }], {
+      topN: 1,
+      maxLength: 5000,
+      query: "test",
+      highlights: false,
+      budgetMs: 8000,
+      fetchTimeoutMs: 5000,
+    });
     assert.equal(out[0].content_extraction, "ok");
     assert.match(out[0].content_type, /text\/html/);
     assert.ok(out[0].fullContent, "fullContent should be set on success");

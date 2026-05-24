@@ -58,10 +58,7 @@ test("enrichResultsWithContent — aborts hung fetch on budget overrun, lets fas
     });
     const elapsed = Date.now() - t0;
 
-    assert.ok(
-      elapsed < 2500,
-      `should return shortly after the 300ms budget, took ${elapsed}ms`
-    );
+    assert.ok(elapsed < 2500, `should return shortly after the 300ms budget, took ${elapsed}ms`);
 
     const fast = out.find((r) => r.title === "Fast");
     const slow = out.find((r) => r.title === "Slow");
