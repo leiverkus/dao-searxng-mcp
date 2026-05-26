@@ -744,10 +744,7 @@ function registerEmptyPromptsCapability(mcpServer) {
   server.registerCapabilities({ prompts: { listChanged: false } });
   server.setRequestHandler(ListPromptsRequestSchema, () => ({ prompts: [] }));
   server.setRequestHandler(GetPromptRequestSchema, (req) => {
-    throw new McpError(
-      ErrorCode.InvalidParams,
-      `Prompt ${req.params.name} not found`,
-    );
+    throw new McpError(ErrorCode.InvalidParams, `Prompt ${req.params.name} not found`);
   });
 }
 
