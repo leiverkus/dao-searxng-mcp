@@ -54,6 +54,12 @@ import path from "node:path";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import {
+  ListPromptsRequestSchema,
+  GetPromptRequestSchema,
+  ErrorCode,
+  McpError,
+} from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { Readability } from "@mozilla/readability";
 import { JSDOM } from "jsdom";
@@ -725,7 +731,24 @@ function createMcpServer() {
   });
 
   registerTools(server);
+  registerEmptyPromptsCapability(server);
   return server;
+}
+
+// Declare the `prompts` capability with an empty list so clients (e.g. opencode)
+// that probe `prompts/list` on connect get `{ prompts: [] }` instead of
+// JSON-RPC -32601 "Method not found". This server intentionally exposes no
+// prompts; the empty declaration is purely to avoid client-side error noise.
+function registerEmptyPromptsCapability(mcpServer) {
+  const { server } = mcpServer;
+  server.registerCapabilities({ prompts: { listChanged: false } });
+  server.setRequestHandler(ListPromptsRequestSchema, () => ({ prompts: [] }));
+  server.setRequestHandler(GetPromptRequestSchema, (req) => {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      `Prompt ${req.params.name} not found`,
+    );
+  });
 }
 
 function registerTools(server) {
